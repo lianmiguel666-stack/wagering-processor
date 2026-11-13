@@ -259,6 +259,34 @@ Invariante final verificado nos testes: `wallet.balance == saldo reconstruído p
 
 Os números variam com o hardware; o relatório gerado é a fonte. Para comparar configurações: `CONCURRENCY=100 HOT_SHARE=0.5 bun run test:load`.
 
+### Resultado medido ([load-test-report.md](./load-test-report.md))
+
+**Ambiente:** GitHub Codespace com **2 vCPU** (AMD EPYC 7763) e 7,8 GiB. Na mesma máquina rodavam o gerador de carga, 1 API, 3 workers, PostgreSQL e LocalStack, via `docker compose`. Configuração padrão: 50 clientes, 30s, 200 wallets, 20% de requisições na wallet quente, 5% de replays.
+
+| Métrica | Valor |
+|---|---|
+| Requisições / throughput | 3.028 em 30,6s → **99 req/s** |
+| Latência p50 / p95 / p99 / máx | 375 / 1.214 / 1.858 / 4.703 ms |
+| Erros (5xx, 503, rede) | **0 (0,00%)** |
+| 201 / 200 (replay) / 422 / 409 | 2.625 / 121 / 282 / 0 |
+| Lock timeouts / retries por corrida no banco | 0 / 0 |
+| Outbox: backlog máx / lag máx / drenagem após a carga | 3.440 eventos / 20,3s / 19,6s |
+| **Wallets inconsistentes / saldos negativos** | **0 de 200 / 0** |
+
+**Análise:**
+
+- **Correção:** é o critério do teste, e passou. Nenhuma wallet diverge do ledger, nenhum saldo negativo, nenhum 409 (não houve conflito falso de idempotência), nenhum erro. Os 121 replays devolveram o resultado original sem novo débito.
+- **Os 282 respostas 422 são esperadas:** a wallet quente começa com 1.000,00 e recebe cerca de 600 requisições (70% apostas de 10,00), então fica sem saldo e as apostas seguintes são rejeitadas com `INSUFFICIENT_FUNDS`. É regra de negócio, não falha.
+- **A latência é fila, não custo por requisição.** No modelo fechado vale a lei de Little: 50 clientes ÷ 99 req/s ≈ 505 ms de tempo médio no sistema, coerente com o p50 de 375 ms. A latência acompanha o throughput, que por sua vez é limitado pelo ambiente: 2 vCPUs disputadas por sete processos, sendo o gerador de carga um deles.
+- **O p99 alto vem da wallet quente, por desenho.** 20% das requisições disputam **uma** linha com `FOR UPDATE` e entram em fila; as outras 199 wallets não esperam por ela. O máximo (4,7s) ficou perto do `lock_timeout` de 5s. Com mais contenção, o que aparece é `503 INFRASTRUCTURE_UNAVAILABLE` (seguro para reenviar com a mesma chave), nunca saldo errado. Na prática uma wallet de jogador raramente recebe dezenas de operações simultâneas.
+- **A outbox é o gargalo assíncrono.** O relay publica um `SendMessage` por evento, em sequência, e cada transação gera 2 eventos (Processed + BalanceChanged). Sob carga máxima o backlog chegou a 3.440 eventos e 20s de lag, drenados em 19,6s depois da carga. Nada se perde (é at-least-once), mas a publicação atrasa.
+- **Próximos passos, em ordem de impacto:**
+  1. `SendMessageBatch` (10 eventos por chamada) e publicação concorrente por `aggregateId` no relay, que deve reduzir o lag em cerca de uma ordem de grandeza;
+  2. rodar o gerador de carga numa máquina separada, para medir só o serviço;
+  3. mais de uma instância de API atrás de um balanceador (a correção não muda: os locks são por linha no banco);
+  4. fundir os dois `SET LOCAL` de cada transação num só statement.
+- **O que não medimos:** um teste sustentado (minutos/horas, para ver crescimento de inbox/outbox) e o perfil de CPU de cada processo. A afirmação de que o host com 2 vCPUs é o limite é uma hipótese (sete processos disputando dois núcleos); confirmar exigiria `docker stats` durante a carga.
+
 ## 18. Trade-offs e limitações
 
 - **UoW do MikroORM não usado para escrita** (seção 4): SQL explícito em troca de identity map/dirty checking.
