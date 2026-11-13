@@ -44,8 +44,14 @@ export class SqsWagerConsumer {
     if (!this.running) return;
     this.running = false;
     this.abort.abort();
-    const grace = new Promise<"timeout">((resolve) => setTimeout(() => resolve("timeout"), this.config.shutdownGraceMs));
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const grace = new Promise<"timeout">((resolve) => {
+      timer = setTimeout(() => resolve("timeout"), this.config.shutdownGraceMs);
+    });
     const result = await Promise.race([Promise.all([...this.loops, ...this.inFlight]).then(() => "done" as const), grace]);
+    // Without this the pending grace timer keeps the process alive for the
+    // whole grace period even when in-flight work finished immediately.
+    clearTimeout(timer);
     this.logger.info("sqs consumer stopped", { result, inFlight: this.inFlight.size });
   }
 
