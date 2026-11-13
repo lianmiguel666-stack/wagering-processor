@@ -77,12 +77,19 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
       lockTimeoutMs: int(env, "DB_LOCK_TIMEOUT_MS", 5_000),
       statementTimeoutMs: int(env, "DB_STATEMENT_TIMEOUT_MS", 15_000),
     },
-    aws: {
-      region: env.AWS_REGION ?? "us-east-1",
-      endpoint: env.AWS_ENDPOINT_URL || undefined,
-      accessKeyId: env.AWS_ACCESS_KEY_ID || undefined,
-      secretAccessKey: env.AWS_SECRET_ACCESS_KEY || undefined,
-    },
+    // Local-first defaults (like DATABASE_URL): with nothing configured the
+    // service talks to LocalStack on localhost:4566. In real AWS set
+    // AWS_ENDPOINT_URL="" (empty) and let the SDK resolve credentials.
+    aws: (() => {
+      const endpoint = env.AWS_ENDPOINT_URL === undefined ? "http://localhost:4566" : env.AWS_ENDPOINT_URL || undefined;
+      const local = endpoint !== undefined && /localhost|127\.0\.0\.1|localstack|ministack/.test(endpoint);
+      return {
+        region: env.AWS_REGION ?? "us-east-1",
+        endpoint,
+        accessKeyId: env.AWS_ACCESS_KEY_ID || (local ? "test" : undefined),
+        secretAccessKey: env.AWS_SECRET_ACCESS_KEY || (local ? "test" : undefined),
+      };
+    })(),
     sqs: {
       wagerQueueName: env.SQS_WAGER_QUEUE ?? "wager-transactions.fifo",
       deadLetterQueueName: env.SQS_WAGER_DLQ ?? "wager-transactions-dlq.fifo",
