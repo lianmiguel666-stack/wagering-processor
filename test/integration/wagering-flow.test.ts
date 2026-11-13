@@ -1,4 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { FailureCode } from "../../src/domain/wagering/failure-code";
+import { WagerTransactionStatus } from "../../src/domain/wagering/wager-transaction";
 import { randomUUID } from "node:crypto";
 import {
   DuplicateExternalTransactionIdError,
@@ -119,9 +121,9 @@ describe("BET / WIN / LOSS", () => {
   test("currency and player mismatches are rejected with distinct codes", async () => {
     const wallet = await openWallet(app, "10.00");
     const ccy = await submit(app, wager(wallet, { money: { amount: "1.00", currency: "USD" } }));
-    expect(ccy.failureCode).toBe("CURRENCY_MISMATCH");
+    expect(ccy.failureCode).toBe(FailureCode.CurrencyMismatch);
     const player = await submit(app, wager(wallet, { playerId: randomUUID() }));
-    expect(player.failureCode).toBe("PLAYER_WALLET_MISMATCH");
+    expect(player.failureCode).toBe(FailureCode.PlayerWalletMismatch);
     await assertLedgerConsistent(app, wallet.id);
   });
 
@@ -158,7 +160,7 @@ describe("idempotency", () => {
     const first = await submit(app, input);
     const again = await submit(app, input);
     expect(again).toEqual({ ...first, idempotentReplay: true });
-    expect(again.failureCode).toBe("INSUFFICIENT_FUNDS");
+    expect(again.failureCode).toBe(FailureCode.InsufficientFunds);
   });
 
   test("same (provider, external id) under another idempotency key is a conflict", async () => {
@@ -187,10 +189,10 @@ describe("REFUND / ROLLBACK", () => {
     expect(refund).toMatchObject({ status: "PROCESSED", balance: brl("100.00") });
 
     const second = await submit(app, wager(wallet, { kind: "REFUND", referenceExternalTransactionId: betId, money: brl("20.00") }));
-    expect(second.failureCode).toBe("REFERENCE_ALREADY_REVERSED");
+    expect(second.failureCode).toBe(FailureCode.ReferenceAlreadyReversed);
     // A BET already refunded cannot be rolled back either (stricter, documented).
     const rollback = await submit(app, wager(wallet, { kind: "ROLLBACK", referenceExternalTransactionId: betId, money: brl("20.00") }));
-    expect(rollback.failureCode).toBe("REFERENCE_ALREADY_REVERSED");
+    expect(rollback.failureCode).toBe(FailureCode.ReferenceAlreadyReversed);
     await assertLedgerConsistent(app, wallet.id);
   });
 
@@ -199,14 +201,14 @@ describe("REFUND / ROLLBACK", () => {
     const winId = `win-${randomUUID()}`;
     await submit(app, wager(wallet, { kind: "WIN", externalTransactionId: winId, money: brl("5.00") }));
     const wrongKind = await submit(app, wager(wallet, { kind: "REFUND", referenceExternalTransactionId: winId, money: brl("5.00") }));
-    expect(wrongKind.failureCode).toBe("REFERENCE_KIND_NOT_ALLOWED");
+    expect(wrongKind.failureCode).toBe(FailureCode.ReferenceKindNotAllowed);
 
     const betId = `bet-${randomUUID()}`;
     await submit(app, wager(wallet, { externalTransactionId: betId, money: brl("10.00") }));
     const partial = await submit(app, wager(wallet, { kind: "REFUND", referenceExternalTransactionId: betId, money: brl("5.00") }));
-    expect(partial.failureCode).toBe("REFERENCE_AMOUNT_MISMATCH");
+    expect(partial.failureCode).toBe(FailureCode.ReferenceAmountMismatch);
     const otherRound = await submit(app, wager(wallet, { kind: "REFUND", roundId: "round-2", referenceExternalTransactionId: betId, money: brl("10.00") }));
-    expect(otherRound.failureCode).toBe("REFERENCE_MISMATCH");
+    expect(otherRound.failureCode).toBe(FailureCode.ReferenceMismatch);
     await assertLedgerConsistent(app, wallet.id);
   });
 
@@ -240,7 +242,7 @@ describe("REFUND / ROLLBACK", () => {
     const betId = `bet-${randomUUID()}`;
     await submit(app, wager(wallet, { externalTransactionId: betId, money: brl("10.00") }));
     const refund = await submit(app, wager(wallet, { kind: "REFUND", referenceExternalTransactionId: betId, money: brl("10.00") }));
-    expect(refund.failureCode).toBe("REFERENCE_NOT_PROCESSED");
+    expect(refund.failureCode).toBe(FailureCode.ReferenceNotProcessed);
   });
 });
 
@@ -262,7 +264,7 @@ describe("out-of-order references", () => {
   test("worker retries with backoff and rejects with REFERENCE_NOT_FOUND after the limit", async () => {
     const wallet = await openWallet(app, "100.00");
     const pending = await submit(app, wager(wallet, { kind: "ROLLBACK", referenceExternalTransactionId: `nope-${randomUUID()}`, money: brl("1.00") }));
-    expect(pending.status).toBe("PENDING_REFERENCE");
+    expect(pending.status).toBe(WagerTransactionStatus.PendingReference);
 
     // Not due yet: nothing happens.
     let run = await app.resolvePending.runOnce();
@@ -287,7 +289,7 @@ describe("out-of-order references", () => {
     await submit(app, wager(wallet, { externalTransactionId: betId, money: brl("10.00") }));
     // ROLLBACK of a WIN that has not arrived yet.
     const rb = await submit(app, wager(wallet, { kind: "ROLLBACK", referenceExternalTransactionId: winId, money: brl("30.00") }));
-    expect(rb.status).toBe("PENDING_REFERENCE");
+    expect(rb.status).toBe(WagerTransactionStatus.PendingReference);
     // The WIN arrives and the dependent is settled inline.
     await submit(app, wager(wallet, { kind: "WIN", externalTransactionId: winId, money: brl("30.00") }));
     expect((await app.queries.getTransaction(rb.transactionId)).status).toBe("PROCESSED");
@@ -361,7 +363,7 @@ describe("atomicity", () => {
 
     // The redelivery after the "crash" is processed normally, exactly once.
     const retried = await app.process.execute(command, { source: "sqs", correlationId: "c", inbox: { consumerName: "c", messageId, payloadHash: command.payloadHash } });
-    expect(retried.type === "result" && retried.result.status).toBe("PROCESSED");
+    expect(retried.type === "result" && retried.result.status).toBe(WagerTransactionStatus.Processed);
     expect(await ledgerCount(wallet.id)).toBe(2);
     await assertLedgerConsistent(app, wallet.id);
   });

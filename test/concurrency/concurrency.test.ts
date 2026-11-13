@@ -1,4 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { FailureCode } from "../../src/domain/wagering/failure-code";
+import { WagerTransactionStatus } from "../../src/domain/wagering/wager-transaction";
 import { randomUUID } from "node:crypto";
 import { IdempotencyConflictError } from "../../src/application/errors";
 import { parseSubmitWagerInput } from "../../src/application/use-cases/wager-command";
@@ -41,8 +43,8 @@ describe("mandatory scenario (section 8)", () => {
         submit(app, wager(wallet, { money: brl("80.00") })),
       ]);
       const statuses = results.map((r) => r.status).sort();
-      expect(statuses).toEqual(["PROCESSED", "REJECTED"]);
-      expect(results.find((r) => r.status === "REJECTED")?.failureCode).toBe("INSUFFICIENT_FUNDS");
+      expect(statuses).toEqual([WagerTransactionStatus.Processed, WagerTransactionStatus.Rejected]);
+      expect(results.find((r) => r.status === "REJECTED")?.failureCode).toBe(FailureCode.InsufficientFunds);
       expect((await app.queries.getWallet(wallet.id)).balance).toEqual(brl("20.00"));
       expect(await debitEntries(wallet.id)).toBe(1);
 
