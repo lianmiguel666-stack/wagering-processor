@@ -247,7 +247,19 @@ Um único mapeamento (`error-mapping.ts`), igual para todos os endpoints:
 
 Invariante final verificado nos testes: `wallet.balance == saldo reconstruído pelo ledger`.
 
-## 17. Trade-offs e limitações
+## 17. Teste de carga
+
+`bun run test:load` (com a stack de pé: `docker compose up -d`) exercita a **API HTTP real**, com os workers publicando a outbox, e grava `load-test-report.md` com ambiente, metodologia e resultados.
+
+- **Modelo fechado:** `CONCURRENCY` clientes (padrão 50) durante `DURATION_S` (30s); cada um envia a próxima requisição assim que recebe a resposta.
+- **Carga realista:** 200 wallets; 20% das requisições numa **wallet quente** (contenção de lock); 5% reenviam uma requisição já enviada (replay idempotente); mix 70% BET, 25% WIN, 5% LOSS.
+- **Medido:** throughput, latência p50/p95/p99/máx, distribuição de status, taxa de erro, replays, conflitos de lock e retries (via `/metrics`), backlog e lag da outbox (amostrados no PostgreSQL a cada 500 ms), tempo para drenar a outbox e **reconciliação de todas as wallets ao final**.
+- **Critério de aprovação é correção, não RPS:** zero wallets inconsistentes e zero saldos negativos (o script sai com código 1 caso contrário).
+- **Honestidade da medição:** o gerador de carga roda na mesma máquina que o serviço, então os números incluem a disputa de CPU entre os dois; a wallet quente serializa de propósito e domina o p99. Os 422 esperados (a wallet quente fica sem saldo) são resultado de negócio, não erro.
+
+Os números variam com o hardware; o relatório gerado é a fonte. Para comparar configurações: `CONCURRENCY=100 HOT_SHARE=0.5 bun run test:load`.
+
+## 18. Trade-offs e limitações
 
 - **UoW do MikroORM não usado para escrita** (seção 4): SQL explícito em troca de identity map/dirty checking.
 - **Serialização por wallet:** throughput de uma wallet quente é limitado pela latência de uma transação curta. É o preço de correção sem tempestade de retries; wallets distintas escalam horizontalmente.
@@ -256,6 +268,5 @@ Invariante final verificado nos testes: `wallet.balance == saldo reconstruído p
 - **Ledger de partidas dobradas** não implementado (diferencial opcional): há um lançamento por wallet; a contrapartida (house/provider) seria o próximo passo.
 - **Consumidores dos eventos** precisam deduplicar por `eventId` fora da janela de 5 min do FIFO.
 - **Autenticação** não implementada (seção 12).
-- **Teste de carga** (`test:load`) não incluído.
 - **`WALLET_NOT_FOUND`** não fica auditado como transação (limitação da FK); fica nos logs e métricas.
 - Próximos passos: OpenTelemetry (traces), particionamento da outbox por data, arquivamento da tabela de inbox (TTL), double-entry, DLQ redrive tooling.

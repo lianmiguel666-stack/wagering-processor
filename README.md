@@ -41,6 +41,7 @@ bun run start            # APP_ROLE=all: API + workers no mesmo processo
 | `bun run test:integration` | PostgreSQL real: schema, fluxos, outbox, handler de mensagens |
 | `bun run test:concurrency` | paralelismo real, múltiplos processos, crash recovery |
 | `bun run test:sqs` | ponta a ponta com LocalStack + PostgreSQL |
+| `bun run test:load` | teste de carga contra a API rodando (gera `load-test-report.md`; ver ARCHITECTURE.md §17) |
 | `bun run send:message -- --wallet <id> --player <id> --kind BET --amount 25.00 [--times 3]` | publica uma mensagem na fila (`--times` reenvia o mesmo `messageId`) |
 
 ### Testes

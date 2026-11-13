@@ -17,6 +17,7 @@
     "test:integration": "bun test --timeout 60000 test/integration",
     "test:concurrency": "bun test --timeout 120000 test/concurrency",
     "test:sqs": "bun test --timeout 120000 test/sqs",
+    "test:load": "bun run test/load/load-test.ts",
     "send:message": "bun run scripts/send-message.ts"
   },
   "dependencies": {
