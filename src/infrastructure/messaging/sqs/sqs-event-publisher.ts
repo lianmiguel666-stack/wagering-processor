@@ -1,6 +1,6 @@
 import { SendMessageCommand } from "@aws-sdk/client-sqs";
-import { EventPublisher } from "../../../application/ports/runtime";
-import { IntegrationEventEnvelope } from "../../../domain/events/integration-event";
+import type { EventPublisher } from "../../../application/ports/runtime";
+import type { IntegrationEventEnvelope } from "../../../domain/events/integration-event";
 import { SqsQueues } from "./sqs-queues";
 
 /**

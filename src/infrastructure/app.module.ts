@@ -1,16 +1,7 @@
-import {
-  DynamicModule,
-  Inject,
-  Injectable,
-  MiddlewareConsumer,
-  Module,
-  NestModule,
-  OnApplicationShutdown,
-  Provider,
-} from "@nestjs/common";
+import { type DynamicModule, Inject, Injectable, type MiddlewareConsumer, Module, type NestModule, type OnApplicationShutdown, type Provider } from "@nestjs/common";
 import { APP_FILTER } from "@nestjs/core";
-import { UnitOfWork } from "../application/ports/repositories";
-import { AppLogger, Clock, IdGenerator, Metrics } from "../application/ports/runtime";
+import type { UnitOfWork } from "../application/ports/repositories";
+import type { AppLogger, Clock, IdGenerator, Metrics } from "../application/ports/runtime";
 import { systemClock, UuidV7Generator } from "../application/services/system";
 import { WagerProcessor } from "../application/services/wager-processor";
 import { CreateWalletUseCase } from "../application/use-cases/create-wallet";
@@ -20,7 +11,7 @@ import { WalletQueries } from "../application/use-cases/queries";
 import { ReconcileWalletUseCase } from "../application/use-cases/reconcile-wallet";
 import { ResolvePendingReferencesUseCase } from "../application/use-cases/resolve-pending-references";
 import { DEFAULT_OUTBOX_RETRY_POLICY } from "../domain/messaging/outbox-message";
-import { AppConfig } from "./config/app-config";
+import type { AppConfig } from "./config/app-config";
 import { NoopProviderIdentity, ProviderAuthGuard } from "./http/auth/provider-auth.guard";
 import { HealthController } from "./http/controllers/health.controller";
 import { WageringController } from "./http/controllers/wagering.controller";
@@ -35,7 +26,7 @@ import { JsonLogger } from "./observability/json-logger";
 import { PrometheusMetrics } from "./observability/prometheus-metrics";
 import { initOrm, MikroOrmTransactionRunner } from "./persistence/mikro-orm/mikro-orm";
 import { SqlUnitOfWork } from "./persistence/sql-unit-of-work";
-import { SqlTransactionRunner } from "./persistence/sql/sql-executor";
+import type { SqlTransactionRunner } from "./persistence/sql/sql-executor";
 import { TOKENS } from "./tokens";
 import { BackgroundWorkers, SQS_CONSUMER } from "./workers/background-workers";
 

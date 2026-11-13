@@ -1,12 +1,12 @@
 import { Body, Controller, Get, Headers, Inject, Param, Post, Req, Res, UseGuards } from "@nestjs/common";
 import type { Request, Response } from "express";
-import { ProcessWagerTransactionUseCase, WagerResult } from "../../../application/use-cases/process-wager-transaction";
-import { TransactionView, WalletQueries } from "../../../application/use-cases/queries";
+import { ProcessWagerTransactionUseCase, type WagerResult } from "../../../application/use-cases/process-wager-transaction";
+import { type TransactionView, WalletQueries } from "../../../application/use-cases/queries";
 import { parseSubmitWagerInput } from "../../../application/use-cases/wager-command";
 import { InvalidArgumentError } from "../../../domain/shared/domain-error";
 import { RequestContext } from "../../observability/request-context";
 import { TOKENS } from "../../tokens";
-import { assertProviderAllowed, PRINCIPAL_KEY, ProviderAuthGuard, ProviderPrincipal } from "../auth/provider-auth.guard";
+import { assertProviderAllowed, PRINCIPAL_KEY, ProviderAuthGuard, type ProviderPrincipal } from "../auth/provider-auth.guard";
 import { currentCorrelationId } from "../correlation.middleware";
 import { statusForWagerResult } from "../filters/error-mapping";
 

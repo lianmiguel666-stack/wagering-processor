@@ -2,14 +2,10 @@ import { InboxMessage } from "../../../domain/messaging/inbox-message";
 import { OutboxMessage } from "../../../domain/messaging/outbox-message";
 import { Money } from "../../../domain/money/money";
 import { FailureCode, isFailureCode } from "../../../domain/wagering/failure-code";
-import {
-  WagerTransaction,
-  WagerTransactionKind,
-  WagerTransactionStatus,
-} from "../../../domain/wagering/wager-transaction";
+import { WagerTransaction, WagerTransactionKind, WagerTransactionStatus } from "../../../domain/wagering/wager-transaction";
 import { Wallet } from "../../../domain/wallet/wallet";
 import { LedgerDirection, WalletLedgerEntry } from "../../../domain/wallet/wallet-ledger-entry";
-import { Row } from "../sql/sql-executor";
+import type { Row } from "../sql/sql-executor";
 
 /**
  * numeric(20,2) → Money. Drivers return numeric as a string ("25.00"), so the

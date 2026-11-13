@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, ForbiddenException, Inject, Injectable, UnauthorizedException } from "@nestjs/common";
+import { type CanActivate, type ExecutionContext, ForbiddenException, Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import type { Request } from "express";
 import { TOKENS } from "../../tokens";
 

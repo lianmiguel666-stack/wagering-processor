@@ -1,28 +1,12 @@
 import { ConcurrencyConflictError, UniqueViolationError, WalletAlreadyExistsError } from "../../../application/errors";
-import {
-  InboxRepository,
-  LedgerPage,
-  LedgerRepository,
-  OutboxRepository,
-  OutboxStats,
-  ReconciliationSnapshot,
-  WagerTransactionRepository,
-  WalletRepository,
-} from "../../../application/ports/repositories";
+import { InboxRepository, LedgerPage, LedgerRepository, OutboxRepository, OutboxStats, ReconciliationSnapshot, WagerTransactionRepository, WalletRepository } from "../../../application/ports/repositories";
 import { InboxMessage } from "../../../domain/messaging/inbox-message";
 import { OutboxMessage } from "../../../domain/messaging/outbox-message";
 import { WagerTransaction, WagerTransactionStatus } from "../../../domain/wagering/wager-transaction";
 import { Wallet } from "../../../domain/wallet/wallet";
 import { WalletLedgerEntry } from "../../../domain/wallet/wallet-ledger-entry";
-import { SqlExecutor } from "../sql/sql-executor";
-import {
-  inboxFromRow,
-  ledgerEntryFromRow,
-  moneyFromDb,
-  outboxFromRow,
-  transactionFromRow,
-  walletFromRow,
-} from "./mappers";
+import type { SqlExecutor } from "../sql/sql-executor";
+import { inboxFromRow, ledgerEntryFromRow, moneyFromDb, outboxFromRow, transactionFromRow, walletFromRow } from "./mappers";
 
 /*
  * Repositories write explicit SQL on purpose: every statement on the money

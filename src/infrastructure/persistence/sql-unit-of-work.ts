@@ -1,14 +1,8 @@
-import { TransactionalRepositories, UnitOfWork } from "../../application/ports/repositories";
-import { Metrics } from "../../application/ports/runtime";
-import {
-  SqlInboxRepository,
-  SqlLedgerRepository,
-  SqlOutboxRepository,
-  SqlWagerTransactionRepository,
-  SqlWalletRepository,
-} from "./repositories/sql-repositories";
+import { TransactionalRepositories, type UnitOfWork } from "../../application/ports/repositories";
+import type { Metrics } from "../../application/ports/runtime";
+import { SqlInboxRepository, SqlLedgerRepository, SqlOutboxRepository, SqlWagerTransactionRepository, SqlWalletRepository } from "./repositories/sql-repositories";
 import { isLockTimeout, translateDatabaseError } from "./sql/database-errors";
-import { SqlExecutor, SqlTransactionRunner } from "./sql/sql-executor";
+import type { SqlExecutor, SqlTransactionRunner } from "./sql/sql-executor";
 
 export function createRepositories(sql: SqlExecutor): TransactionalRepositories {
   return {

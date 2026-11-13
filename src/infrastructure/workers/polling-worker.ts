@@ -1,4 +1,4 @@
-import { AppLogger } from "../../application/ports/runtime";
+import type { AppLogger } from "../../application/ports/runtime";
 
 /**
  * Runs `task` every `intervalMs` until stopped. If a run reports work done

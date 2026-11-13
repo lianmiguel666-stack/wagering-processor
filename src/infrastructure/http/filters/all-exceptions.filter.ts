@@ -1,6 +1,6 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException, Inject } from "@nestjs/common";
+import { type ArgumentsHost, Catch, type ExceptionFilter, HttpException, Inject } from "@nestjs/common";
 import type { Response } from "express";
-import { AppLogger } from "../../../application/ports/runtime";
+import type { AppLogger } from "../../../application/ports/runtime";
 import { RequestErrorCode } from "../../../domain/wagering/failure-code";
 import { TOKENS } from "../../tokens";
 import { mapError } from "./error-mapping";

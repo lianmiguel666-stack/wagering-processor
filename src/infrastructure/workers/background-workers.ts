@@ -1,8 +1,8 @@
-import { BeforeApplicationShutdown, Inject, Injectable, OnApplicationBootstrap } from "@nestjs/common";
-import { AppLogger } from "../../application/ports/runtime";
+import { type BeforeApplicationShutdown, Inject, Injectable, type OnApplicationBootstrap } from "@nestjs/common";
+import type { AppLogger } from "../../application/ports/runtime";
 import { PublishOutboxUseCase } from "../../application/use-cases/publish-outbox";
 import { ResolvePendingReferencesUseCase } from "../../application/use-cases/resolve-pending-references";
-import { AppConfig } from "../config/app-config";
+import type { AppConfig } from "../config/app-config";
 import { SqsWagerConsumer } from "../messaging/sqs/sqs-wager-consumer";
 import { TOKENS } from "../tokens";
 import { PollingWorker } from "./polling-worker";

@@ -1,8 +1,8 @@
 import { Migrator } from "@mikro-orm/migrations";
-import { defineConfig, EntityManager, MikroORM, Options } from "@mikro-orm/postgresql";
-import { AppConfig } from "../../config/app-config";
+import { defineConfig, EntityManager, MikroORM, type Options } from "@mikro-orm/postgresql";
+import type { AppConfig } from "../../config/app-config";
 import { translateDatabaseError } from "../sql/database-errors";
-import { Row, SqlExecutor, SqlTransactionRunner } from "../sql/sql-executor";
+import type { Row, SqlExecutor, SqlTransactionRunner } from "../sql/sql-executor";
 import { Migration20261112000000InitialSchema } from "../migrations/Migration20261112000000InitialSchema";
 
 /**

@@ -1,15 +1,5 @@
-import {
-  ApplicationError,
-  ConcurrencyConflictError,
-  DuplicateExternalTransactionIdError,
-  IdempotencyConflictError,
-  ResourceNotFoundError,
-  TransientInfrastructureError,
-  UniqueViolationError,
-  WalletAlreadyExistsError,
-  WalletNotFoundError,
-} from "../../../application/errors";
-import { WagerResult } from "../../../application/use-cases/process-wager-transaction";
+import { ApplicationError, ConcurrencyConflictError, DuplicateExternalTransactionIdError, IdempotencyConflictError, ResourceNotFoundError, TransientInfrastructureError, UniqueViolationError, WalletAlreadyExistsError, WalletNotFoundError } from "../../../application/errors";
+import type { WagerResult } from "../../../application/use-cases/process-wager-transaction";
 import { InvalidArgumentError } from "../../../domain/shared/domain-error";
 import { RequestErrorCode } from "../../../domain/wagering/failure-code";
 import { WagerTransactionStatus } from "../../../domain/wagering/wager-transaction";

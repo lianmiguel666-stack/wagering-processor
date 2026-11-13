@@ -1,5 +1,5 @@
 import type { LoggerService } from "@nestjs/common";
-import { AppLogger, LogFields } from "../../application/ports/runtime";
+import type { AppLogger, LogFields } from "../../application/ports/runtime";
 import { RequestContext } from "./request-context";
 
 const LEVELS = { debug: 10, info: 20, warn: 30, error: 40 } as const;

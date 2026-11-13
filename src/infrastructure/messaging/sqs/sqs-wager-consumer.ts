@@ -1,13 +1,7 @@
-import {
-  ChangeMessageVisibilityCommand,
-  DeleteMessageCommand,
-  Message,
-  ReceiveMessageCommand,
-  SendMessageCommand,
-} from "@aws-sdk/client-sqs";
-import { AppLogger } from "../../../application/ports/runtime";
-import { AppConfig } from "../../config/app-config";
-import { Disposition, WagerMessageHandler } from "../wager-message-handler";
+import { ChangeMessageVisibilityCommand, DeleteMessageCommand, type Message, ReceiveMessageCommand, SendMessageCommand } from "@aws-sdk/client-sqs";
+import type { AppLogger } from "../../../application/ports/runtime";
+import type { AppConfig } from "../../config/app-config";
+import { type Disposition, WagerMessageHandler } from "../wager-message-handler";
 import { SqsQueues } from "./sqs-queues";
 
 /**

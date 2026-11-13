@@ -1,7 +1,7 @@
 import { Body, Controller, Get, HttpCode, Inject, Param, Post, Query, UseGuards } from "@nestjs/common";
-import { CreateWalletInput, CreateWalletUseCase, WalletView } from "../../../application/use-cases/create-wallet";
-import { LedgerPageView, WalletQueries } from "../../../application/use-cases/queries";
-import { ReconcileWalletUseCase, ReconciliationReport } from "../../../application/use-cases/reconcile-wallet";
+import { type CreateWalletInput, CreateWalletUseCase, type WalletView } from "../../../application/use-cases/create-wallet";
+import { type LedgerPageView, WalletQueries } from "../../../application/use-cases/queries";
+import { ReconcileWalletUseCase, type ReconciliationReport } from "../../../application/use-cases/reconcile-wallet";
 import { TOKENS } from "../../tokens";
 import { ProviderAuthGuard } from "../auth/provider-auth.guard";
 import { currentCorrelationId } from "../correlation.middleware";

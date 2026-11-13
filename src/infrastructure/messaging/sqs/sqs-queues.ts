@@ -1,12 +1,6 @@
-import {
-  CreateQueueCommand,
-  GetQueueAttributesCommand,
-  GetQueueUrlCommand,
-  ListQueuesCommand,
-  SQSClient,
-} from "@aws-sdk/client-sqs";
+import { CreateQueueCommand, GetQueueAttributesCommand, GetQueueUrlCommand, ListQueuesCommand, SQSClient } from "@aws-sdk/client-sqs";
 import { TransientInfrastructureError } from "../../../application/errors";
-import { AppConfig } from "../../config/app-config";
+import type { AppConfig } from "../../config/app-config";
 
 export function createSqsClient(config: AppConfig): SQSClient {
   return new SQSClient({

@@ -1,5 +1,5 @@
 import { collectDefaultMetrics, Counter, Gauge, Histogram, Registry } from "prom-client";
-import { Metrics, ProcessingSource } from "../../application/ports/runtime";
+import type { Metrics, ProcessingSource } from "../../application/ports/runtime";
 
 /** Prometheus adapter for the Metrics port. Exposed at GET /metrics. */
 export class PrometheusMetrics implements Metrics {

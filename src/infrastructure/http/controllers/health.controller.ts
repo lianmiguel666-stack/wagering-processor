@@ -2,7 +2,7 @@ import { Controller, Get, Header, Inject, Optional, Res } from "@nestjs/common";
 import type { Response } from "express";
 import { SqsQueues } from "../../messaging/sqs/sqs-queues";
 import { PrometheusMetrics } from "../../observability/prometheus-metrics";
-import { SqlTransactionRunner } from "../../persistence/sql/sql-executor";
+import type { SqlTransactionRunner } from "../../persistence/sql/sql-executor";
 import { TOKENS } from "../../tokens";
 
 async function probe(name: string, check: () => Promise<void>, timeoutMs = 2_000) {
